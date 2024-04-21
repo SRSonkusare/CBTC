@@ -1,0 +1,204 @@
+package online_exam;
+import java.util.*;
+
+class User {
+    private String username;
+    private String password;
+    private String role; // Can be 'student' or 'admin'
+
+    public User(String username, String password, String role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setPassword(String newPassword) {
+        this.password = newPassword;
+    }
+}
+
+class Question {
+    private String question;
+    private String[] options;
+    private int correctOption;
+
+    public Question(String question, String[] options, int correctOption) {
+        this.question = question;
+        this.options = options;
+        this.correctOption = correctOption;
+    }
+
+    public String getQuestion() {
+        return question;
+    }
+
+    public String[] getOptions() {
+        return options;
+    }
+
+    public int getCorrectOption() {
+        return correctOption;
+    }
+}
+
+class Exam {
+    private List<Question> questions;
+    private Map<String, Map<Integer, Integer>> userAnswers; // Map of username to their answers
+
+    public Exam(List<Question> questions) {
+        this.questions = questions;
+        this.userAnswers = new HashMap<>();
+    }
+
+    public void addUserAnswer(String username, int questionIndex, int selectedOption) {
+        if (!userAnswers.containsKey(username)) {
+            userAnswers.put(username, new HashMap<>());
+        }
+        userAnswers.get(username).put(questionIndex, selectedOption);
+    }
+
+    public Map<Integer, Integer> getUserAnswers(String username) {
+        return userAnswers.getOrDefault(username, new HashMap<>());
+    }
+
+    public List<Question> getQuestions() {
+        return questions;
+    }
+}
+
+public class OnlineExaminationSystem {
+    private static List<User> users = new ArrayList<>();
+    private static List<Question> questions = new ArrayList<>();
+    private static Exam exam;
+
+    public static void main(String[] args) {
+        initializeData();
+
+        // Simulate multiple users interacting with the system
+        simulateUserInteraction();
+    }
+
+    private static void initializeData() {
+        // Initialize users
+        users.add(new User("user1", "password", "student"));
+        users.add(new User("admin1", "adminpassword", "admin"));
+
+        // Initialize questions
+        questions.add(new Question("What is 2 + 2?", new String[]{"A. 3", "B. 4", "C. 5", "D. 6"}, 1));
+        questions.add(new Question("What is the capital of France?", new String[]{"A. London", "B. Paris", "C. Rome", "D. Berlin"}, 1));
+
+        // Initialize exam with questions
+        exam = new Exam(questions);
+    }
+
+    private static void simulateUserInteraction() {
+        // Simulate user interaction
+        Scanner scanner = new Scanner(System.in);
+        for (User user : users) {
+            System.out.println("Welcome, " + user.getUsername() + "! Please log in.");
+            boolean isLoggedIn = login(user, scanner);
+            if (!isLoggedIn) {
+                System.out.println("Invalid username or password.");
+                continue;
+            }
+            System.out.println("Login successful. You can now take the exam.");
+
+            // Start the exam
+            takeExam(user, scanner);
+
+            // Update password
+            updatePassword(user, scanner);
+
+            // Log out
+            logout();
+        }
+    }
+
+    private static boolean login(User user, Scanner scanner) {
+        System.out.print("Username: ");
+        String username = scanner.nextLine();
+        System.out.print("Password: ");
+        String password = scanner.nextLine();
+        return user.getUsername().equals(username) && user.getPassword().equals(password);
+    }
+
+    private static void takeExam(User user, Scanner scanner) {
+        for (int i = 0; i < exam.getQuestions().size(); i++) {
+            Question question = exam.getQuestions().get(i);
+            System.out.println("Question " + (i + 1) + ": " + question.getQuestion());
+            String[] options = question.getOptions();
+            for (String option : options) {
+                System.out.println(option);
+            }
+            System.out.print("Your answer (A/B/C/D or 's' to skip): ");
+            String input = scanner.nextLine().toUpperCase();
+            if (input.equals("S")) {
+                continue;
+            }
+            int selectedOption = input.charAt(0) - 'A';
+            exam.addUserAnswer(user.getUsername(), i, selectedOption);
+        }
+        System.out.println("Exam submitted.");
+    }
+
+    private static void updatePassword(User user, Scanner scanner) {
+        System.out.print("Do you want to update your password? (yes/no): ");
+        String choice = scanner.nextLine();
+        if (choice.equalsIgnoreCase("yes")) {
+            System.out.print("Enter new password: ");
+            String newPassword = scanner.nextLine();
+            user.setPassword(newPassword);
+            System.out.println("Password updated successfully.");
+        }
+    }
+
+    private static void logout() {
+        System.out.println("Logged out successfully.");
+        System.out.println("===============================================");
+    }
+}
+
+
+/*Welcome, user1! Please log in.
+Username: user1
+Password: password
+Login successful. You can now take the exam.
+Question 1: What is 2 + 2?
+A. 3
+B. 4
+C. 5
+D. 6
+Your answer (A/B/C/D or 's' to skip): B
+Question 2: What is the capital of France?
+A. London
+B. Paris
+C. Rome
+D. Berlin
+Your answer (A/B/C/D or 's' to skip): B
+Exam submitted.
+Do you want to update your password? (yes/no): yes
+Enter new password: newpassword
+Password updated successfully.
+Logged out successfully.
+===============================================
+Welcome, admin1! Please log in.
+Username: admin1
+Password: adminpassword
+Login successful. You can now take the exam.
+Exam submitted.
+Do you want to update your password? (yes/no): no
+Logged out successfully.
+===============================================
+*/
